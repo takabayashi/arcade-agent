@@ -1,0 +1,44 @@
+[project]
+name = "arcade-agent"
+version = "0.1.0"
+description = "A portable Python demo agent that runs as a local background daemon and uses Arcade.dev's hosted Gmail + Google Calendar tools, driven by Anthropic Claude."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "taka" }]
+dependencies = [
+    "arcadepy>=1.10.0,<2.0",
+    "anthropic>=0.104.0,<1.0",
+    "typer>=0.12.0,<1.0",
+    "rich>=13.0.0,<15.0",
+    "python-dotenv>=1.0.0,<2.0",
+    "pydantic>=2.6.0,<3.0",
+    "tomli-w>=1.0.0,<2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.7.0",
+]
+
+[project.scripts]
+arcade-agent = "arcade_agent.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/arcade_agent"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
