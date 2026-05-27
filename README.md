@@ -19,32 +19,47 @@ To prove out three things together:
 
 ## Quickstart
 
-Requires Python 3.11+ and [`uv`](https://docs.astral.sh/uv/) (or plain `pip`).
+### One-line install
 
 ```bash
-# 1. Clone + install
-git clone git@github.com:takabayashi/arcade-agent.git
-cd arcade-agent
-uv venv && uv pip install -e ".[dev]"
+curl -fsSL https://raw.githubusercontent.com/takabayashi/arcade-agent/main/install.sh | bash
+```
 
-# 2. Configure secrets
-cp .env.example .env
-# edit .env:
-#   ARCADE_API_KEY    from https://api.arcade.dev/dashboard
-#   ANTHROPIC_API_KEY from https://console.anthropic.com/settings/keys
+That script clones the repo to `~/arcade-agent`, installs [`uv`](https://docs.astral.sh/uv/) if you don't have it, creates a venv with all dependencies, and seeds `.env` from `.env.example`. It's safe to re-run — your `.env` is preserved.
 
-# 3. First-run wizard: creates a binding, opens browser for Google consent via Arcade
+To install somewhere else: append a path, e.g.
+`... | bash -s -- ~/code/arcade-agent`.
+
+Then:
+
+```bash
+cd ~/arcade-agent
+
+# 1. Fill in your two keys in .env (one-time)
+#      ARCADE_API_KEY    from https://api.arcade.dev/dashboard
+#      ANTHROPIC_API_KEY from https://console.anthropic.com/settings/keys
+
+# 2. First-run wizard (creates a binding, opens browser for Google consent via Arcade)
 .venv/bin/arcade-agent init
 
-# 4. Start the daemon
+# 3. Start the daemon and chat
 .venv/bin/arcade-agent daemon start
-
-# 5. Talk to it
 .venv/bin/arcade-agent ask "list my last 3 emails"
 .venv/bin/arcade-agent chat
 
-# 6. When done
+# 4. When done
 .venv/bin/arcade-agent daemon stop
+```
+
+### Manual install (if you don't want to pipe `curl` to `bash`)
+
+Requires Python 3.11+ and [`uv`](https://docs.astral.sh/uv/) (or plain `pip`).
+
+```bash
+git clone https://github.com/takabayashi/arcade-agent.git
+cd arcade-agent
+uv venv && uv pip install -e ".[dev]"
+cp .env.example .env  # then edit with your keys
 ```
 
 ## Architecture
