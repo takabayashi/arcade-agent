@@ -314,9 +314,7 @@ class ArcadeAgentClient:
                     error_message=None,
                     error_kind="AUTH_REQUIRED",
                 )
-            raise ArcadeToolError(
-                f"arcade execute failed: {exc}", tool_name=tool_name
-            ) from exc
+            raise ArcadeToolError(f"arcade execute failed: {exc}", tool_name=tool_name) from exc
         except Exception as exc:
             raise ArcadeToolError(f"arcade execute failed: {exc}", tool_name=tool_name) from exc
 
