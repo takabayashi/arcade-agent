@@ -15,9 +15,9 @@ DEFAULT_ANTHROPIC_MODEL: str = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-
 GMAIL_TOOLS: list[str] = [
     "Gmail.SendEmail",
     "Gmail.ListEmails",
-    "Gmail.SearchEmails",
-    "Gmail.GetEmail",
-    "Gmail.CreateDraft",
+    "Gmail.SearchThreads",
+    "Gmail.GetThread",
+    "Gmail.WriteDraftEmail",
     "Gmail.ReplyToEmail",
     "Gmail.ListLabels",
 ]
@@ -27,7 +27,7 @@ GCAL_TOOLS: list[str] = [
     "GoogleCalendar.CreateEvent",
     "GoogleCalendar.UpdateEvent",
     "GoogleCalendar.DeleteEvent",
-    "GoogleCalendar.FindTimeSlotsWhenAvailable",
+    "GoogleCalendar.FindTimeSlotsWhenEveryoneIsFree",
     "GoogleCalendar.ListCalendars",
 ]
 
