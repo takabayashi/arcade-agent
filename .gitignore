@@ -6,19 +6,35 @@ __pycache__/
 .Python
 *.egg-info/
 .eggs/
+build/
+dist/
 
 # Virtual env
 .venv/
 venv/
+env/
 
 # Tooling
 .ruff_cache/
 .mypy_cache/
 .pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # Project
 .env
-~/.arcade-agent/
+.env.local
+.env.*.local
+
+# Editors / IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.cursor/
 
 # OS
 .DS_Store
+Thumbs.db

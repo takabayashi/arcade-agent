@@ -154,6 +154,9 @@ docs/
 ```bash
 uv venv && uv pip install -e ".[dev]"
 
+# Optional but recommended: install pre-commit hooks
+.venv/bin/pre-commit install
+
 # Lint + format
 .venv/bin/ruff check src tests scripts
 .venv/bin/ruff format src tests scripts
@@ -166,7 +169,9 @@ uv venv && uv pip install -e ".[dev]"
 ```
 
 CI runs `ruff check`, `ruff format --check`, and `pytest` on every push and PR — see
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml). Dependabot keeps Python and
+GitHub Actions versions fresh weekly — see
+[`.github/dependabot.yml`](.github/dependabot.yml).
 
 ## Security model
 
