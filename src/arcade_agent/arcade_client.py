@@ -23,6 +23,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from arcadepy import APIStatusError
+
 from arcade_agent.errors import ArcadeToolError, ConfigError
 
 if TYPE_CHECKING:
@@ -65,6 +67,26 @@ def _normalize_name(arcade_name: str) -> str:
     if not _NAME_RE.match(n):
         raise ConfigError(f"tool name not Anthropic-compatible after normalization: {n!r}")
     return n
+
+
+def _is_tool_authorization_required(exc: APIStatusError) -> bool:
+    """True iff Arcade raised the 403 that signals "user needs to OAuth this tool".
+
+    Arcade's hosted API surfaces unmet tool authorization as HTTP 403 with body
+    ``{"name": "tool_authorization_required", "message": "authorization required"}``
+    rather than the spec-documented ``success=False`` payload, so we have to
+    detect it on the exception object and route it into the AUTH_REQUIRED flow.
+    """
+    if exc.status_code != 403:
+        return False
+    body = exc.body
+    if isinstance(body, dict) and body.get("name") == "tool_authorization_required":
+        return True
+    if isinstance(body, dict):
+        inner = body.get("error")
+        if isinstance(inner, dict) and inner.get("name") == "tool_authorization_required":
+            return True
+    return False
 
 
 _VAL_TYPE_TO_JSON: dict[str, str] = {
@@ -278,6 +300,23 @@ class ArcadeAgentClient:
             raise ArcadeToolError("arcade execute timed out", tool_name=tool_name) from exc
         except ArcadeToolError:
             raise
+        except APIStatusError as exc:
+            if _is_tool_authorization_required(exc):
+                logger.info(
+                    "arcade signaled tool_authorization_required for %s; fetching consent URL",
+                    tool_name,
+                )
+                fetched = await self.authorize(user_id, tool_name)
+                return ExecuteResult(
+                    success=False,
+                    output=None,
+                    auth_url=fetched.url,
+                    error_message=None,
+                    error_kind="AUTH_REQUIRED",
+                )
+            raise ArcadeToolError(
+                f"arcade execute failed: {exc}", tool_name=tool_name
+            ) from exc
         except Exception as exc:
             raise ArcadeToolError(f"arcade execute failed: {exc}", tool_name=tool_name) from exc
 

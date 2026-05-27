@@ -255,6 +255,49 @@ async def test_execute_transport_error_raises(mock_arcade: MagicMock) -> None:
         await client.execute("user@x", "Gmail.SendEmail", {})
 
 
+async def test_execute_403_tool_authorization_required_returns_auth_required(
+    mock_arcade: MagicMock,
+) -> None:
+    """Arcade surfaces unmet tool auth as HTTP 403, not as success=False payload.
+
+    Reproduces the live error
+    ``arcade execute failed: Error code: 403 - {'name': 'tool_authorization_required', ...}``
+    and asserts the wrapper translates it into ``AUTH_REQUIRED`` so the agent
+    can drive the consent flow instead of crashing.
+    """
+    import httpx
+    from arcadepy import PermissionDeniedError
+
+    request = httpx.Request("POST", "https://api.arcade.dev/v1/tools/execute")
+    response = httpx.Response(
+        status_code=403,
+        request=request,
+        json={"name": "tool_authorization_required", "message": "authorization required"},
+    )
+    mock_arcade.tools.execute = AsyncMock(
+        side_effect=PermissionDeniedError(
+            "Error code: 403 - {'name': 'tool_authorization_required', "
+            "'message': 'authorization required'}",
+            response=response,
+            body={
+                "name": "tool_authorization_required",
+                "message": "authorization required",
+            },
+        )
+    )
+    mock_arcade.tools.authorize = AsyncMock(
+        return_value=AuthorizationResponse(id="auth_403", status="pending", url="https://oauth")
+    )
+    client = ArcadeAgentClient(mock_arcade, ["Gmail.SendEmail"])
+
+    result = await client.execute("user@x", "Gmail.SendEmail", {})
+
+    assert result.success is False
+    assert result.auth_url == "https://oauth"
+    assert result.error_kind == "AUTH_REQUIRED"
+    mock_arcade.tools.authorize.assert_awaited_once()
+
+
 async def test_execute_timeout_raises(mock_arcade: MagicMock) -> None:
     mock_arcade.tools.execute = AsyncMock(side_effect=TimeoutError())
     client = ArcadeAgentClient(mock_arcade, ["Gmail.SendEmail"])
